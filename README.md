@@ -42,7 +42,7 @@ pip install -r requirements.txt
 Start the application with the following command:
 
 ```bash
-streamlit run app.py
+streamlit run main.py
 ```
 Then, open your browser and go to `http://localhost:8501` to start using the tool.
 
