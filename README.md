@@ -33,7 +33,7 @@ This structured format ensures that all custom ontologies are seamlessly integra
 To install and run `paragraph2OWL`, follow these steps:
 
 ```bash
-git clone https://github.com/your-username/paragraph2OWL.git
+git clone https://github.com/rodriguez-r-j/paragraph2OWL.git
 cd paragraph2OWL
 pip install -r requirements.txt
 ```
