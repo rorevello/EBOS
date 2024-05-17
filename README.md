@@ -1,4 +1,4 @@
-# paragraph2OWL: Ontology Search Tool
+![paragraph2OWL](docs/source/paragraph2OWL.svg)
 
 `paragraph2OWL` is an advanced software tool designed to assist researchers in identifying and utilizing relevant ontologies in their fields of study. Capable of accessing the vast database of OBO Foundry, along with functionality for incorporating custom ontologies, `paragraph2OWL` is an indispensable platform for life sciences research and beyond.
 
