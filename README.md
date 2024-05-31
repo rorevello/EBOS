@@ -1,17 +1,17 @@
-![paragraph2OWL](docs/source/paragraph2OWL.svg)
+![EBOS](docs/source/EBOS.svg)
 
-`paragraph2OWL` is an advanced software tool designed to assist researchers in identifying and utilizing relevant ontologies in their fields of study. Capable of accessing the vast database of OBO Foundry, along with functionality for incorporating custom ontologies, `paragraph2OWL` is an indispensable platform for life sciences research and beyond.
+`EBOS` is an advanced software tool designed to assist researchers in identifying and utilizing relevant ontologies in their fields of study. Capable of accessing the vast database of OBO Foundry, along with functionality for incorporating custom ontologies, `EBOS` is an indispensable platform for life sciences research and beyond.
 
 ## Key Features
 
 - **Access to OBO Foundry Ontologies**: Allows searching among the standardized and well-maintained ontologies available in OBO Foundry, facilitating access to reliable and up-to-date resources.
-- **Integration of Custom Ontologies**: Users can extend the utility of `paragraph2OWL` by incorporating their own ontologies, enabling more personalized and relevant searches.
+- **Integration of Custom Ontologies**: Users can extend the utility of `EBOS` by incorporating their own ontologies, enabling more personalized and relevant searches.
 - **Streamlit User Interface**: Provides an intuitive and accessible user interface, designed to simplify the user experience and facilitate the search for ontologies.
 - **Direct Visualization and Access to Results**: Presents search results clearly, including detailed information and direct links for documentation and download.
 
 ## Format for Custom Ontologies
 
-To incorporate custom ontologies into `paragraph2OWL`, documents must follow the following dictionary format:
+To incorporate custom ontologies into `EBOS`, documents must follow the following dictionary format:
 
 ```python
 {
@@ -26,15 +26,15 @@ To incorporate custom ontologies into `paragraph2OWL`, documents must follow the
     }
 }
 ```
-This structured format ensures that all custom ontologies are seamlessly integrated into `paragraph2OWL`, allowing for easy access and use by researchers.
+This structured format ensures that all custom ontologies are seamlessly integrated into `EBOS`, allowing for easy access and use by researchers.
 
 ## Installation
 
-To install and run `paragraph2OWL`, follow these steps:
+To install and run `EBOS`, follow these steps:
 
 ```bash
-git clone https://github.com/rodriguez-r-j/paragraph2OWL.git
-cd paragraph2OWL
+git clone https://github.com/rodriguez-r-j/EBOS.git
+cd EBOS
 pip install -r requirements.txt
 ```
 ## Usage
@@ -47,7 +47,7 @@ streamlit run main.py
 Then, open your browser and go to `http://localhost:8501` to start using the tool.
 
 ## Contributing
-We welcome contributions of any kind. If you're interested in helping to improve paragraph2OWL, follow these steps:
+We welcome contributions of any kind. If you're interested in helping to improve EBOS, follow these steps:
 
 Fork the project
 Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
