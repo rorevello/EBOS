@@ -141,40 +141,69 @@ def get_local_repo(path_file):
 st.title("EBOS")
 st.header("Embedding-Based Ontology Search.")
 
-user_query = st.text_area("Enter your text here:", "")
 
 # Fetch list of available ontologies
 db_folder = "db_ontology_local"
 list_ontology = os.listdir(db_folder) + ["OBO Foundry"]
 
-selected_repositories = st.multiselect("Select Repository(s):", list_ontology, default=["OBO Foundry"])
-
+# Initialize session state variables
 if "ontologies" not in st.session_state:
     st.session_state.ontologies = {}
     st.session_state.domains = set()
     st.session_state.ontology_embeddings = []
     st.session_state.ontology_ids = []
+    st.session_state.index = None
+    st.session_state.ontologies_loaded = False
+
+# Selected repositories
+selected_repositories = st.multiselect("Select Repository(s):", list_ontology, default=["OBO Foundry"])
+
+# Reset ontologies and domains when repository selection changes
+if st.session_state.get("selected_repositories") != selected_repositories:
+    st.session_state.ontologies = {}
+    st.session_state.domains = set()
+    st.session_state.ontology_embeddings = []
+    st.session_state.ontology_ids = []
+    st.session_state.index = None
+    st.session_state["selected_repositories"] = selected_repositories
+    st.session_state.ontologies_loaded = False
+
+# Disable interactive elements during vectorization
+interactive_elements_disabled = not st.session_state.ontologies_loaded
 
 if selected_repositories:
-    for repository in selected_repositories:
-        if repository == "OBO Foundry":
-            repo_ontologies, repo_domains = get_obo_ontologies()
-        else:
-            path_file = os.path.join(db_folder, repository)
-            repo_ontologies, repo_domains = get_local_repo(path_file)
-        st.session_state.ontologies.update(repo_ontologies)
-        st.session_state.domains.update(repo_domains)
+    with st.spinner("Loading ontologies..."):
+        for repository in selected_repositories:
+            if repository == "OBO Foundry":
+                repo_ontologies, repo_domains = get_obo_ontologies()
+            else:
+                path_file = os.path.join(db_folder, repository)
+                repo_ontologies, repo_domains = get_local_repo(path_file)
+            st.session_state.ontologies.update(repo_ontologies)
+            st.session_state.domains.update(repo_domains)
+
+    # Ensure ontologies are loaded before proceeding to vectorization
+    st.session_state.ontologies_loaded = True
+
+
+if st.session_state.get("ontologies_loaded"):
+    user_query = st.text_area("Enter your text here:", "")
 
     all_domains = list(st.session_state.domains)
-    selected_domains = st.multiselect("Select Domain(s):", ["Select All"] + all_domains, default=["Select All"])
+    
+    col1, col2 = st.columns([3, 1])
+    
+    with col1:
+        selected_domains = st.multiselect("Select Domain(s):", ["Select All"] + all_domains, default=["Select All"], disabled=False)
+    
+    with col2:
+        num_results = st.number_input("Number of Results:", min_value=1, max_value=100, value=5, step=1, disabled=False)
 
     if "Select All" in selected_domains:
         selected_domains = all_domains
 
-    num_results = st.number_input("Number of Results:", min_value=1, max_value=100, value=5, step=1)
-
     # Vectorize ontologies if not already done
-    if not st.session_state.ontology_embeddings:
+    if len(st.session_state.ontology_embeddings) == 0:
         with st.spinner("Vectorizing ontologies..."):
             for ontology_id, info in st.session_state.ontologies.items():
                 if isinstance(info["domain"], list):
@@ -185,34 +214,46 @@ if selected_repositories:
             st.session_state.ontology_embeddings = np.array(st.session_state.ontology_embeddings)
 
         # Prepare FAISS index
-        dimension = st.session_state.ontology_embeddings.shape[1]
-        st.session_state.index = faiss.IndexFlatL2(dimension)
-        st.session_state.index.add(st.session_state.ontology_embeddings)
+        if st.session_state.ontology_embeddings.size > 0:
+            dimension = st.session_state.ontology_embeddings.shape[1]
+            st.session_state.index = faiss.IndexFlatL2(dimension)
+            st.session_state.index.add(st.session_state.ontology_embeddings)
 
-    if selected_domains and st.button("Search"):
+    if selected_domains and st.button("Search", disabled=interactive_elements_disabled):
         if user_query:
             with st.spinner("Searching for relevant ontologies..."):
                 query_embedding = get_embedding(user_query).reshape(1, -1)
 
-                D, I = st.session_state.index.search(query_embedding, num_results)
-                recommended_ontologies = [(st.session_state.ontology_ids[i], D[0][j]) for j, i in enumerate(I[0])]
+                if st.session_state.index is not None and st.session_state.ontology_embeddings.size > 0:
+                    D, I = st.session_state.index.search(query_embedding, num_results)
+                    recommended_ontologies = [(st.session_state.ontology_ids[i], D[0][j]) for j, i in enumerate(I[0])]
 
-                table_data = [
-                    {
-                        "ID": ontology_id,
-                        "Title": st.session_state.ontologies[ontology_id]["title"],
-                        "Definition": st.session_state.ontologies[ontology_id]["description"],
-                        "Urls": f" Documentation: {st.session_state.ontologies[ontology_id]['url_doc']} Download: {st.session_state.ontologies[ontology_id]['url_download']}",
-                        "Status": check_url_status(st.session_state.ontologies[ontology_id]["url_doc"]),
-                        "Domain": st.session_state.ontologies[ontology_id]["domain"],
-                    }
-                    for ontology_id, _ in recommended_ontologies
-                ]
+                    # Ensure all domains are strings
+                    for ontology_id, _ in recommended_ontologies:
+                        domain = st.session_state.ontologies[ontology_id]["domain"]
+                        if isinstance(domain, list):
+                            st.session_state.ontologies[ontology_id]["domain"] = ", ".join(domain)
+                        elif domain is None:
+                            st.session_state.ontologies[ontology_id]["domain"] = "Unknown"
 
-                data_df = pd.DataFrame(table_data)
-                styled_df = data_df.style.applymap(apply_status_color, subset=["Status"]).applymap(apply_id_color, subset=["ID"])
+                    table_data = [
+                        {
+                            "ID": ontology_id,
+                            "Title": st.session_state.ontologies[ontology_id]["title"],
+                            "Definition": st.session_state.ontologies[ontology_id]["description"],
+                            "Urls": f" Documentation: {st.session_state.ontologies[ontology_id]['url_doc']} Download: {st.session_state.ontologies[ontology_id]['url_download']}",
+                            "Status": check_url_status(st.session_state.ontologies[ontology_id]["url_doc"]),
+                            "Domain": st.session_state.ontologies[ontology_id]["domain"],
+                        }
+                        for ontology_id, _ in recommended_ontologies
+                    ]
 
-                st.table(styled_df)
+                    data_df = pd.DataFrame(table_data)
+                    styled_df = data_df.style.applymap(apply_status_color, subset=["Status"]).applymap(apply_id_color, subset=["ID"])
+
+                    st.table(styled_df)
+                else:
+                    st.error("No embeddings were found to search; this problem is due to an interruption in the vectorization of the ontologies; it is essential that during this process, the text box is not manipulated; reload the repository again to solve the error.", icon="🚨")
         else:
             st.warning("Please enter a query.", icon="🚨")
 else:
