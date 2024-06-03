@@ -138,7 +138,7 @@ def get_local_repo(path_file):
     return ontologies, domains
 
 # Streamlit application
-st.title("paragraph2owl")
+st.title("EBOS")
 st.header("Ontology search system using natural language writing.")
 
 user_query = st.text_area("Enter your text here:", "")
