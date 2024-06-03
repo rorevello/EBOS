@@ -139,7 +139,7 @@ def get_local_repo(path_file):
 
 # Streamlit application
 st.title("EBOS")
-st.header("Ontology search system using natural language writing.")
+st.header("Embedding-Based Ontology Search.")
 
 user_query = st.text_area("Enter your text here:", "")
 
