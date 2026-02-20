@@ -1,0 +1,16 @@
+venv_ebos/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Data and Models
+*.pkl
+models/
+ontology_repository_metadata/*.pkl
